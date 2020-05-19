@@ -11,8 +11,9 @@ function getUsers () {
         .from('users')
 } 
 
-function addUser () {
-    return 
+function addUser(credentials) {
+    return db('users')
+        .insert(credentials);
 } 
 
 function getUserByUsername () {

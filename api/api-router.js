@@ -7,7 +7,20 @@ const router = express.Router();
 const Users = require('./api-model')
 //Creates a user using the information sent inside the body of the request. Hash the password before saving the user to the database.
 router.post('/register', validateCredentials, (req, res) => {
-    res.status(200).json({message: "Hello"})
+    const userSignUp = req.body;
+    const hash = bcrypt.hashSync(userSignUp.password);
+    userSignUp.password = hash;
+
+    console.log(userSignUp);
+    Users.addUser(userSignUp)
+        .then(id => {
+            res.status(201).json({message: `user ${id} successfully created`})
+        })
+        .catch(err => {
+            res.status(500).json({message: "error creating user", error: err})
+        });
+
+
 })
 
 //Use the credentials sent inside the body to authenticate the user. On successful login, create a new JWT with the user id as the subject and send it back to the client. If login fails, respond with the correct status code and the message: 'You shall not pass!'
