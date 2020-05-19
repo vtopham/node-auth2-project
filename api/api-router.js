@@ -42,10 +42,14 @@ router.post('/login', validateCredentials, (req, res) => {
             if(users.length === 0) {
                 res.status(404).json({message: "User not found"})
             } else {
-                
-                const token = generateToken(users[0])
+                user = users[0]
+                if(bcrypt.compareSync( req.body.password, users[0].password)){
+                const token = generateToken(user)
 
                 res.status(200).json({message: "Welcome", token: token})
+                } else {
+                    res.status(403).json({message: "You shall not pass! Incorrect password."})
+                }
             }
         })
         .catch(err => {
