@@ -6,7 +6,7 @@ module.exports = {
     getUserByUsername
 }
 
-function getUsers () {
+function getUsers() {
     return db.select('*')
         .from('users')
 } 
@@ -16,7 +16,9 @@ function addUser(credentials) {
         .insert(credentials);
 } 
 
-function getUserByUsername () {
-    return 
+function getUserByUsername(username) {
+    return db.select('*')
+        .from('users')
+        .where({ username })
 } 
 

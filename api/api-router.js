@@ -2,16 +2,28 @@
 // /api
 const express = require('express')
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
 const router = express.Router();
 const Users = require('./api-model')
+
+function generateToken(user) {
+    const payload = {
+        subject: user.id
+    };
+    const secret = "banana";
+    const options = {
+        expiresIn: '8h'
+    };
+    return jwt.sign(payload, secret, options);
+}
 //Creates a user using the information sent inside the body of the request. Hash the password before saving the user to the database.
 router.post('/register', validateCredentials, (req, res) => {
     const userSignUp = req.body;
     const hash = bcrypt.hashSync(userSignUp.password);
     userSignUp.password = hash;
 
-    console.log(userSignUp);
+   
     Users.addUser(userSignUp)
         .then(id => {
             res.status(201).json({message: `user ${id} successfully created`})
@@ -24,8 +36,21 @@ router.post('/register', validateCredentials, (req, res) => {
 })
 
 //Use the credentials sent inside the body to authenticate the user. On successful login, create a new JWT with the user id as the subject and send it back to the client. If login fails, respond with the correct status code and the message: 'You shall not pass!'
-router.post('/login', (req, res) => {
-    
+router.post('/login', validateCredentials, (req, res) => {
+    Users.getUserByUsername(req.body.username)
+        .then(users => {
+            if(users.length === 0) {
+                res.status(404).json({message: "User not found"})
+            } else {
+                
+                const token = generateToken(users[0])
+
+                res.status(200).json({message: "Welcome", token: token})
+            }
+        })
+        .catch(err => {
+            res.status(500).json({message: "error creating user", error: err})
+        });
 })
 
 
