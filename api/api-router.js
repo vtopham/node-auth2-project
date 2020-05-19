@@ -63,7 +63,7 @@ router.post('/login', validateCredentials, (req, res) => {
 
 
 //If the user is logged in, respond with an array of all the users contained in the database. If the user is not logged in respond with the correct status code and the message: 'You shall not pass!'.
-router.get('/users', (req, res) => {
+router.get('/users', validateToken, (req, res) => {
     Users.getUsers()
         .then(users => {
             res.status(200).json({data: users})
@@ -79,6 +79,25 @@ function validateCredentials(req, res, next) {
     } else {
         res.status(400).json({message: "Please include a username and password in the body"})
     }
+}
+
+function validateToken(req, res, next) {
+    //verify that the user is logged in
+    const token = req.headers.authorization;
+    if(token) {
+        jwt.verify(token, secret, (error, decodedToken) => {
+            if(error) {
+                res.status(401).json({message: "Invalid credentials"})
+            } else {
+                //if the token is good
+                req.jwt = decodedToken;
+                res.status(200).json({message: "Great job"})
+            }
+        })
+    } else {
+        res.status(400).json({message: "Please include your token."})
+    }
+
 }
 
 module.exports = router;
