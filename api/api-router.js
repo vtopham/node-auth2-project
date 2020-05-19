@@ -3,6 +3,7 @@
 const express = require('express')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const secret = require('../config/secrets')
 
 const router = express.Router();
 const Users = require('./api-model')
@@ -11,7 +12,7 @@ function generateToken(user) {
     const payload = {
         subject: user.id
     };
-    const secret = "banana";
+    
     const options = {
         expiresIn: '8h'
     };
@@ -43,11 +44,14 @@ router.post('/login', validateCredentials, (req, res) => {
                 res.status(404).json({message: "User not found"})
             } else {
                 user = users[0]
-                if(bcrypt.compareSync( req.body.password, users[0].password)){
-                const token = generateToken(user)
+                //check to see if the password is correct
+                if(bcrypt.compareSync( req.body.password, user.password)){
+                    //if correct then we'll generate a nice little token and send it over
+                    const token = generateToken(user)
 
-                res.status(200).json({message: "Welcome", token: token})
+                    res.status(200).json({message: "Welcome", token: token})
                 } else {
+                    
                     res.status(403).json({message: "You shall not pass! Incorrect password."})
                 }
             }
